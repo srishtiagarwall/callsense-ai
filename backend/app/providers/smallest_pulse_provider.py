@@ -19,9 +19,7 @@ class SmallestPulseProvider(TranscriptionProvider):
         if not self.is_configured():
             raise ProviderNotConfigured(f"{self.name}: SMALLEST_API_KEY not set")
 
-        params = {}
-        if language:
-            params["language"] = language
+        params = {"language": language or "en"}
 
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
@@ -43,5 +41,5 @@ class SmallestPulseProvider(TranscriptionProvider):
             call_id=call_id,
             provider=self.name,
             language=language,
-            text=data.get("text", ""),
+            text=data.get("transcription", ""),
         )
