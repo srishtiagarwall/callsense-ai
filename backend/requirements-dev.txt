@@ -1,0 +1,8 @@
+# Run scripts/install.ps1 or scripts/install.sh first (handles the
+# resemblyzer --no-deps two-pass install requirements.txt depends on),
+# then: pip install -r requirements-dev.txt
+-r requirements.txt
+
+pytest==9.1.1
+pytest-asyncio==1.4.0
+pytest-mock==3.15.1

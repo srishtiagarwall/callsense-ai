@@ -1,13 +1,8 @@
 import type { EvaluationResult } from "@/lib/types";
+import { scoreColor } from "@/lib/format";
 
 interface ScorecardViewProps {
   evaluation: EvaluationResult;
-}
-
-function scoreColor(score: number): string {
-  if (score >= 0.8) return "var(--status-good)";
-  if (score >= 0.5) return "var(--status-warning)";
-  return "var(--status-critical)";
 }
 
 export default function ScorecardView({ evaluation }: ScorecardViewProps) {
