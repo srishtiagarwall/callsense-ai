@@ -1,75 +1,255 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f9f9f7;
-  --foreground: #0b0b0b;
+  /* Warm Paper (light, default) */
+  --background: #f7f3ec;
+  --foreground: #1c1917;
 
-  --surface-1: #fcfcfb;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
-  --gridline: #e1e0d9;
-  --baseline: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.1);
+  --surface-1: #fbf9f4;
+  --surface-2: #efe9dd;
+  --surface-3: #e4dcc9;
 
-  --series-1: #2a78d6; /* blue */
-  --series-2: #eb6834; /* orange */
-  --series-3: #1baf7a; /* aqua */
-  --series-4: #eda100; /* yellow */
+  --text-primary: #1c1917;
+  --text-secondary: #4a453d;
+  --text-muted: #8a8275;
 
-  --status-good: #0ca30c;
-  --status-warning: #fab219;
-  --status-serious: #ec835a;
-  --status-critical: #d03b3b;
+  --border: #d9d0bc;
+  --border-strong: #c2b79e;
+
+  --accent: #b5451d;
+  --accent-hover: #8f3714;
+  --accent-tint: #f0dccd;
+
+  --status-good: #3f6b3b;
+  --status-warning: #a6741e;
+  --status-critical: #b5451d;
+
+  --series-1: #1c1917;
+  --series-2: #1c191773;
+  --series-3: #b5451db3;
+
+  --gridline: #d9d0bc;
+  --baseline: #c2b79e;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-accent: var(--accent);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
-    --background: #0d0d0d;
-    --foreground: #ffffff;
+    /* Ink Dark */
+    --background: #15130f;
+    --foreground: #f2ede2;
 
-    --surface-1: #1a1a19;
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
-    --gridline: #2c2c2a;
-    --baseline: #383835;
-    --border: rgba(255, 255, 255, 0.1);
+    --surface-1: #1c1912;
+    --surface-2: #252017;
+    --surface-3: #2e2818;
 
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-3: #199e70;
-    --series-4: #c98500;
+    --text-primary: #f2ede2;
+    --text-secondary: #c7bfac;
+    --text-muted: #8d8471;
+
+    --border: #332c1f;
+    --border-strong: #463c29;
+
+    --accent: #e07444;
+    --accent-hover: #ef8b5c;
+    --accent-tint: #3a2418;
+
+    --status-good: #7fa876;
+    --status-warning: #d4a24c;
+    --status-critical: #e07444;
+
+    --series-1: #f2ede2;
+    --series-2: #f2ede280;
+    --series-3: #e07444b3;
+
+    --gridline: #332c1f;
+    --baseline: #463c29;
   }
 }
 
 :root[data-theme="dark"] {
-  --background: #0d0d0d;
-  --foreground: #ffffff;
+  --background: #15130f;
+  --foreground: #f2ede2;
 
-  --surface-1: #1a1a19;
-  --text-primary: #ffffff;
-  --text-secondary: #c3c2b7;
-  --text-muted: #898781;
-  --gridline: #2c2c2a;
-  --baseline: #383835;
-  --border: rgba(255, 255, 255, 0.1);
+  --surface-1: #1c1912;
+  --surface-2: #252017;
+  --surface-3: #2e2818;
 
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --series-3: #199e70;
-  --series-4: #c98500;
+  --text-primary: #f2ede2;
+  --text-secondary: #c7bfac;
+  --text-muted: #8d8471;
+
+  --border: #332c1f;
+  --border-strong: #463c29;
+
+  --accent: #e07444;
+  --accent-hover: #ef8b5c;
+  --accent-tint: #3a2418;
+
+  --status-good: #7fa876;
+  --status-warning: #d4a24c;
+  --status-critical: #e07444;
+
+  --series-1: #f2ede2;
+  --series-2: #f2ede280;
+  --series-3: #e07444b3;
+
+  --gridline: #332c1f;
+  --baseline: #463c29;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+.font-mono,
+input,
+select,
+textarea {
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-link:hover {
+  color: var(--foreground) !important;
+  text-decoration-color: var(--accent) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover) !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.btn-text:hover:not(:disabled) .btn-text-inner {
+  text-decoration: underline;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-text:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-bottom-color: var(--accent) !important;
+  border-bottom-width: 2px !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  font-style: italic;
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* Dense editorial table */
+.dense-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.dense-table thead th {
+  font-family: var(--font-fraunces);
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.dense-table thead th.numeric {
+  text-align: right;
+}
+
+.dense-table tbody td {
+  font-family: var(--font-fraunces);
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  height: 40px;
+}
+
+.dense-table tbody td.numeric {
+  font-family: var(--font-jetbrains-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-size: 0.8125rem;
+}
+
+.dense-table tbody tr:nth-child(even) {
+  background: var(--surface-2);
+}
+
+.dense-table tbody tr.row-link:hover {
+  background: var(--surface-3);
+  cursor: pointer;
+}
+
+.dense-table tbody tr:hover {
+  background: var(--surface-3);
+}
+
+.call-row-link {
+  text-decoration: none;
+}
+
+.call-row-link:hover {
+  text-decoration: underline;
+}
+
+.pager-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.search-result-row {
+  text-decoration: none;
+}
+
+.search-result-row:hover {
+  background: var(--surface-2);
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }

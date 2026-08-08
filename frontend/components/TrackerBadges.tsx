@@ -11,40 +11,41 @@ export default function TrackerBadges({ matches, trackers }: TrackerBadgesProps)
 
   if (matches.length === 0) {
     return (
-      <div
-        className="rounded-lg border p-4 text-sm"
-        style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-muted)" }}
-      >
-        Trackers: no keyword matches found
+      <div style={{ fontFamily: "var(--font-fraunces)", fontStyle: "italic", fontSize: "0.875rem", color: "var(--text-muted)" }}>
+        No keyword matches found.
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}>
-      <div className="mb-3 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-        Trackers
-      </div>
-      <div className="mb-3 flex flex-wrap gap-2">
+    <div>
+      <div className="flex flex-wrap gap-2">
         {uniqueTrackerIds.map((trackerId) => (
           <span
             key={trackerId}
-            className="rounded-full px-3 py-1 text-xs font-medium"
-            style={{ background: "var(--status-warning)", color: "#1a1a1a" }}
+            style={{
+              fontFamily: "var(--font-jetbrains-mono)",
+              fontSize: "0.6875rem",
+              letterSpacing: "0.02em",
+              textTransform: "uppercase",
+              padding: "2px 6px",
+              border: "1px solid var(--border)",
+              color: "var(--accent)",
+            }}
           >
-            {nameById.get(trackerId) ?? trackerId}
+            [{(nameById.get(trackerId) ?? trackerId).toUpperCase()}]
           </span>
         ))}
       </div>
-      <ul className="space-y-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+      <ul className="mt-3 space-y-1">
         {matches.map((m, i) => (
-          <li key={m.id ?? i}>
-            <span className="font-medium" style={{ color: "var(--text-primary)" }}>
-              {nameById.get(m.tracker_id) ?? m.tracker_id}
-            </span>
-            {" — “"}
-            {m.snippet}
-            {"”"}
+          <li
+            key={m.id ?? i}
+            style={{ fontFamily: "var(--font-fraunces)", fontSize: "0.8125rem", color: "var(--text-secondary)" }}
+          >
+            <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>{nameById.get(m.tracker_id) ?? m.tracker_id}</span>
+            {" — "}
+            <span style={{ fontStyle: "italic" }}>&ldquo;{m.snippet}&rdquo;</span>
           </li>
         ))}
       </ul>

@@ -1,58 +1,44 @@
 import Link from "next/link";
 import type { Call } from "@/lib/types";
 import { formatDuration } from "@/lib/format";
+import EmptyState from "@/components/EmptyState";
 
 interface CallTableProps {
   calls: Call[];
 }
 
+const DATE_FORMAT = new Intl.DateTimeFormat("en-US", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
 export default function CallTable({ calls }: CallTableProps) {
   if (calls.length === 0) {
-    return (
-      <div
-        className="rounded-lg border p-6 text-center text-sm"
-        style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-muted)" }}
-      >
-        No calls yet — upload one to get started.
-      </div>
-    );
+    return <EmptyState>No calls yet — upload one to get started.</EmptyState>;
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border" style={{ borderColor: "var(--border)" }}>
-      <table className="w-full text-sm" style={{ background: "var(--surface-1)" }}>
+    <div className="overflow-x-auto">
+      <table className="dense-table">
         <thead>
-          <tr style={{ borderBottom: "1px solid var(--gridline)" }}>
-            <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--text-secondary)" }}>
-              Filename
-            </th>
-            <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--text-secondary)" }}>
-              Language
-            </th>
-            <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--text-secondary)" }}>
-              Duration
-            </th>
-            <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--text-secondary)" }}>
-              Uploaded
-            </th>
+          <tr>
+            <th>Filename</th>
+            <th>Language</th>
+            <th className="numeric">Duration</th>
+            <th className="numeric">Uploaded</th>
           </tr>
         </thead>
         <tbody>
           {calls.map((call) => (
-            <tr key={call.id} style={{ borderBottom: "1px solid var(--gridline)" }}>
-              <td className="px-4 py-2">
-                <Link href={`/calls/${call.id}`} className="font-medium hover:underline" style={{ color: "var(--series-1)" }}>
+            <tr key={call.id}>
+              <td>
+                <Link href={`/calls/${call.id}`} style={{ color: "var(--accent)" }} className="call-row-link">
                   {call.filename}
                 </Link>
               </td>
-              <td className="px-4 py-2" style={{ color: "var(--text-secondary)" }}>
-                {call.language ?? "—"}
-              </td>
-              <td className="px-4 py-2 tabular-nums" style={{ color: "var(--text-secondary)" }}>
+              <td style={{ color: "var(--text-secondary)" }}>{call.language ?? "—"}</td>
+              <td className="numeric" style={{ color: "var(--text-secondary)" }}>
                 {call.duration_seconds != null ? formatDuration(call.duration_seconds) : "—"}
               </td>
-              <td className="px-4 py-2 tabular-nums" style={{ color: "var(--text-secondary)" }}>
-                {new Date(call.uploaded_at).toLocaleString()}
+              <td className="numeric" style={{ color: "var(--text-secondary)" }}>
+                {DATE_FORMAT.format(new Date(call.uploaded_at))}
               </td>
             </tr>
           ))}

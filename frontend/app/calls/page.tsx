@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { listCalls } from "@/lib/api";
 import type { Call } from "@/lib/types";
 import CallTable from "@/components/CallTable";
+import TextInput from "@/components/TextInput";
 
 const PAGE_SIZE = 20;
 
@@ -26,52 +27,67 @@ export default function CallsPage() {
   const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-end justify-between gap-6">
+        <h1
+          style={{
+            fontFamily: "var(--font-fraunces)",
+            fontWeight: 600,
+            fontSize: "2.75rem",
+            lineHeight: 1.05,
+            letterSpacing: "-0.01em",
+            color: "var(--text-primary)",
+          }}
+        >
           Calls
         </h1>
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Search by filename…"
-          className="w-64 rounded-md border px-3 py-1.5 text-sm"
-          style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
-        />
+        <div style={{ width: 260 }}>
+          <TextInput
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search by filename…"
+          />
+        </div>
       </div>
 
       {error && (
-        <div className="rounded-lg border p-4 text-sm" style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}>
-          {error}
-        </div>
+        <div style={{ fontFamily: "var(--font-fraunces)", color: "var(--status-critical)" }}>{error}</div>
       )}
 
       <CallTable calls={calls} />
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm" style={{ color: "var(--text-secondary)" }}>
+        <div
+          className="flex items-center justify-between"
+          style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.8125rem", color: "var(--text-secondary)" }}
+        >
           <span>
-            Page {page} of {totalPages} ({total} calls)
+            {total} calls
           </span>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setPage((p) => Math.max(p - 1, 1))}
               disabled={page <= 1}
-              className="rounded-md border px-3 py-1.5 disabled:opacity-50"
-              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+              className="pager-link disabled:opacity-40"
+              style={{ background: "none", border: "none", color: "var(--accent)", cursor: page <= 1 ? "default" : "pointer" }}
             >
-              Previous
+              ‹ Prev
             </button>
+            <span style={{ color: "var(--border-strong)" }}>│</span>
+            <span>
+              {page} / {totalPages}
+            </span>
+            <span style={{ color: "var(--border-strong)" }}>│</span>
             <button
               onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
               disabled={page >= totalPages}
-              className="rounded-md border px-3 py-1.5 disabled:opacity-50"
-              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+              className="pager-link disabled:opacity-40"
+              style={{ background: "none", border: "none", color: "var(--accent)", cursor: page >= totalPages ? "default" : "pointer" }}
             >
-              Next
+              Next ›
             </button>
           </div>
         </div>

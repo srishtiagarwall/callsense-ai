@@ -23,17 +23,22 @@ import type {
   EvaluationResult,
   Job,
   Rubric,
+  SegmentSentiment,
   SentimentResult,
   TalkMetrics,
   Tracker,
   TrackerMatch,
   TranscriptResult,
 } from "@/lib/types";
+import { formatDuration } from "@/lib/format";
 import TranscriptView from "@/components/TranscriptView";
 import ScorecardView from "@/components/ScorecardView";
 import TalkTimeBar from "@/components/TalkTimeBar";
 import SentimentTimeline from "@/components/SentimentTimeline";
 import TrackerBadges from "@/components/TrackerBadges";
+import SectionHeading from "@/components/SectionHeading";
+import { TextAction } from "@/components/Button";
+import EmptyState from "@/components/EmptyState";
 
 export default function CallDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -183,108 +188,185 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   if (!call) {
-    return <p style={{ color: "var(--text-muted)" }}>Loading…</p>;
+    return (
+      <p style={{ fontFamily: "var(--font-fraunces)", fontStyle: "italic", color: "var(--text-muted)" }}>Loading…</p>
+    );
   }
 
+  const jobInFlight = job !== null && job.status !== "done" && job.status !== "failed";
+  const sentimentBySegment = sentiment
+    ? new Map<number, SegmentSentiment>(sentiment.segments.map((s) => [s.segment_index, s]))
+    : undefined;
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+        <h1
+          style={{
+            fontFamily: "var(--font-fraunces)",
+            fontWeight: 600,
+            fontSize: "2rem",
+            lineHeight: 1.1,
+            letterSpacing: "-0.01em",
+            color: "var(--text-primary)",
+          }}
+        >
           {call.filename}
         </h1>
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Uploaded {new Date(call.uploaded_at).toLocaleString()}
-          {call.language ? ` — ${call.language}` : ""}
-        </p>
+        <div
+          className="mt-1"
+          style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.8125rem", color: "var(--text-secondary)" }}
+        >
+          {new Date(call.uploaded_at).toLocaleString()}
+          {call.language ? ` · ${call.language}` : ""}
+          {call.duration_seconds != null ? ` · ${formatDuration(call.duration_seconds)}` : ""}
+        </div>
+        <div
+          className="mt-2 flex items-center gap-2"
+          style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.75rem" }}
+        >
+          <span
+            aria-hidden="true"
+            className="inline-block rounded-full"
+            style={{
+              width: 6,
+              height: 6,
+              background: jobInFlight ? "var(--accent)" : "var(--status-good)",
+              animation: jobInFlight ? "status-pulse 1.2s ease-in-out infinite" : "none",
+            }}
+          />
+          <span style={{ color: "var(--text-secondary)" }}>
+            {jobInFlight ? `TRANSCRIBING (${job!.status.toUpperCase()})` : transcript ? "READY" : "NOT TRANSCRIBED"}
+          </span>
+        </div>
       </div>
 
       {error && (
-        <div className="rounded-lg border p-4 text-sm" style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}>
-          {error}
-        </div>
+        <div style={{ fontFamily: "var(--font-fraunces)", color: "var(--status-critical)" }}>{error}</div>
       )}
 
-      <div className="flex gap-3">
-        <button
-          onClick={handleTranscribe}
-          disabled={busy || (job !== null && job.status !== "done" && job.status !== "failed")}
-          className="rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          style={{ background: "var(--series-1)" }}
-        >
-          {transcript ? "Re-transcribe" : "Transcribe"}
-        </button>
-        {rubrics.length > 0 && (
-          <select
-            value={selectedRubricId}
-            onChange={(e) => setSelectedRubricId(e.target.value)}
-            className="rounded-md border px-3 py-2 text-sm"
-            style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
-          >
-            {rubrics.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-        )}
-        <button
-          onClick={handleEvaluate}
-          disabled={busy || !transcript}
-          className="rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          style={{ background: "var(--series-3)" }}
-        >
-          {evaluation ? "Re-evaluate" : "Evaluate"}
-        </button>
-        <button
-          onClick={handleAnalyzeSentiment}
-          disabled={busy || !transcript}
-          className="rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          style={{ background: "var(--series-4)" }}
-        >
-          {sentiment ? "Re-analyze sentiment" : "Analyze sentiment"}
-        </button>
-        <button
-          onClick={handleRunTrackers}
-          disabled={busy || !transcript}
-          className="rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
-        >
-          {trackerMatches ? "Re-run trackers" : "Run trackers"}
-        </button>
-        <button
-          onClick={handleIndexForSearch}
-          disabled={busy || !transcript}
-          className="rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
-        >
-          {indexed ? "Re-index for search" : "Index for search"}
-        </button>
-      </div>
+      <div className="grid gap-12" style={{ gridTemplateColumns: "1fr 340px" }}>
+        <div style={{ borderLeft: "1px solid var(--border)", paddingLeft: "2rem" }}>
+          {transcript ? (
+            <TranscriptView transcript={transcript} sentimentBySegment={sentimentBySegment} />
+          ) : (
+            <EmptyState>This call hasn&rsquo;t been transcribed yet.</EmptyState>
+          )}
 
-      {job && job.status !== "done" && (
-        <div
-          className="rounded-lg border p-3 text-sm"
-          style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-secondary)" }}
-        >
-          Transcription job: <span style={{ color: "var(--text-primary)" }}>{job.status}</span>
-          {job.attempts.length > 0 && (
-            <ul className="mt-1 list-inside list-disc">
-              {job.attempts.map((a, i) => (
-                <li key={i}>
-                  {a.provider}: {a.status}
-                  {a.reason ? ` (${a.reason})` : ""}
-                </li>
-              ))}
-            </ul>
+          {job && job.attempts.length > 0 && (
+            <div className="mt-6" style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
+              <div
+                style={{
+                  fontFamily: "var(--font-jetbrains-mono)",
+                  fontSize: "0.6875rem",
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                }}
+              >
+                Provider attempts
+              </div>
+              <ul className="mt-1">
+                {job.attempts.map((a, i) => (
+                  <li
+                    key={i}
+                    style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.75rem", color: "var(--text-secondary)" }}
+                  >
+                    {a.provider}: {a.status}
+                    {a.reason ? ` (${a.reason})` : ""}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
-      )}
 
-      {transcript && <TranscriptView transcript={transcript} />}
-      {talkMetrics && <TalkTimeBar metrics={talkMetrics} />}
-      {sentiment && <SentimentTimeline segments={sentiment.segments} />}
-      {trackerMatches && <TrackerBadges matches={trackerMatches} trackers={trackers} />}
-      {evaluation && <ScorecardView evaluation={evaluation} />}
+        <div className="flex flex-col gap-8">
+          <div>
+            <SectionHeading index={1} title="Scorecard" />
+            {rubrics.length > 0 && (
+              <select
+                value={selectedRubricId}
+                onChange={(e) => setSelectedRubricId(e.target.value)}
+                className="mb-3 w-full"
+                style={{
+                  fontFamily: "var(--font-fraunces)",
+                  fontSize: "0.8125rem",
+                  background: "transparent",
+                  border: "1px solid var(--border-strong)",
+                  borderRadius: 0,
+                  color: "var(--text-primary)",
+                  padding: "0.25rem 0.5rem",
+                }}
+              >
+                {rubrics.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {evaluation ? (
+              <ScorecardView evaluation={evaluation} />
+            ) : (
+              <EmptyState>Not yet evaluated.</EmptyState>
+            )}
+          </div>
+
+          <div>
+            <SectionHeading index={2} title="Talk time" />
+            {talkMetrics ? <TalkTimeBar metrics={talkMetrics} /> : <EmptyState>No segments yet.</EmptyState>}
+          </div>
+
+          <div>
+            <SectionHeading index={3} title="Sentiment" />
+            {sentiment ? (
+              <SentimentTimeline segments={sentiment.segments} />
+            ) : (
+              <EmptyState>Not yet analyzed.</EmptyState>
+            )}
+          </div>
+
+          <div>
+            <SectionHeading index={4} title="Trackers" />
+            {trackerMatches ? (
+              <TrackerBadges matches={trackerMatches} trackers={trackers} />
+            ) : (
+              <EmptyState>Not yet run.</EmptyState>
+            )}
+          </div>
+
+          <div>
+            <SectionHeading index={5} title="Actions" />
+            <div className="flex flex-col">
+              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
+                <TextAction onClick={handleTranscribe} disabled={busy || jobInFlight}>
+                  {transcript ? "Re-transcribe" : "Transcribe"}
+                </TextAction>
+              </div>
+              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
+                <TextAction onClick={handleEvaluate} disabled={busy || !transcript}>
+                  {evaluation ? "Re-evaluate" : "Evaluate"}
+                </TextAction>
+              </div>
+              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
+                <TextAction onClick={handleAnalyzeSentiment} disabled={busy || !transcript}>
+                  {sentiment ? "Re-analyze sentiment" : "Analyze sentiment"}
+                </TextAction>
+              </div>
+              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
+                <TextAction onClick={handleRunTrackers} disabled={busy || !transcript}>
+                  {trackerMatches ? "Re-run trackers" : "Run trackers"}
+                </TextAction>
+              </div>
+              <div className="py-2">
+                <TextAction onClick={handleIndexForSearch} disabled={busy || !transcript}>
+                  {indexed ? "Re-index for search" : "Index for search"}
+                </TextAction>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

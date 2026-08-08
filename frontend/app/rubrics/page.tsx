@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { createRubric, deleteRubric, listRubrics } from "@/lib/api";
 import type { Rubric, RubricCriterion } from "@/lib/types";
+import { PrimaryButton, TextAction } from "@/components/Button";
+import TextInput from "@/components/TextInput";
+import EmptyState from "@/components/EmptyState";
 
 function parseCriteriaLines(text: string): RubricCriterion[] {
   return text
@@ -15,9 +18,27 @@ function parseCriteriaLines(text: string): RubricCriterion[] {
     });
 }
 
-function criteriaToLines(criteria: RubricCriterion[]): string {
-  return criteria.map((c) => `${c.id}: ${c.description}`).join("\n");
-}
+const fieldLabel = {
+  fontFamily: "var(--font-fraunces)",
+  fontWeight: 500,
+  fontSize: "0.75rem",
+  letterSpacing: "0.06em",
+  textTransform: "uppercase" as const,
+  color: "var(--text-muted)",
+};
+
+const textareaStyle = {
+  fontFamily: "var(--font-fraunces)",
+  fontSize: "0.875rem",
+  background: "transparent",
+  border: "none",
+  borderBottom: "1px solid var(--border-strong)",
+  borderRadius: 0,
+  color: "var(--text-primary)",
+  padding: "0.375rem 0",
+  width: "100%",
+  resize: "vertical" as const,
+};
 
 export default function RubricsPage() {
   const [rubrics, setRubrics] = useState<Rubric[]>([]);
@@ -82,141 +103,114 @@ export default function RubricsPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-end justify-between">
+        <h1
+          style={{
+            fontFamily: "var(--font-fraunces)",
+            fontWeight: 600,
+            fontSize: "2.75rem",
+            lineHeight: 1.05,
+            letterSpacing: "-0.01em",
+            color: "var(--text-primary)",
+          }}
+        >
           Rubrics
         </h1>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-white"
-          style={{ background: "var(--series-1)" }}
-        >
-          {showForm ? "Cancel" : "New rubric"}
-        </button>
+        <PrimaryButton onClick={() => setShowForm((s) => !s)}>{showForm ? "Cancel" : "New Rubric"}</PrimaryButton>
       </div>
 
       {error && (
-        <div className="rounded-lg border p-3 text-sm" style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}>
-          {error}
-        </div>
+        <div style={{ fontFamily: "var(--font-fraunces)", color: "var(--status-critical)" }}>{error}</div>
       )}
 
       {showForm && (
-        <form
-          onSubmit={handleCreate}
-          className="flex flex-col gap-3 rounded-lg border p-4"
-          style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}
-        >
+        <form onSubmit={handleCreate} className="flex flex-col gap-4" style={{ borderBottom: "1px solid var(--border-strong)", paddingBottom: "1.5rem" }}>
           <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-              ID (slug)
-            </label>
-            <input
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              required
-              placeholder="support-qa"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
-            />
+            <label style={fieldLabel}>ID (slug)</label>
+            <TextInput value={id} onChange={(e) => setId(e.target.value)} required placeholder="support-qa" className="mt-1" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-              Name
-            </label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Support Call QA"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
-            />
+            <label style={fieldLabel}>Name</label>
+            <TextInput value={name} onChange={(e) => setName(e.target.value)} required placeholder="Support Call QA" className="mt-1" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-              Script steps (one per line)
-            </label>
+            <label style={fieldLabel}>Script steps (one per line)</label>
             <textarea
               value={scriptSteps}
               onChange={(e) => setScriptSteps(e.target.value)}
               rows={3}
               placeholder={"Greet the customer\nConfirm the issue\nResolve or escalate"}
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
+              className="mt-1"
+              style={textareaStyle}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-              Compliance rules (id: description, one per line)
-            </label>
+            <label style={fieldLabel}>Compliance rules (id: description, one per line)</label>
             <textarea
               value={complianceRules}
               onChange={(e) => setComplianceRules(e.target.value)}
               rows={2}
               placeholder={"consent: Agent obtained clear consent"}
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
+              className="mt-1"
+              style={textareaStyle}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-              QA criteria (id: description, one per line)
-            </label>
+            <label style={fieldLabel}>QA criteria (id: description, one per line)</label>
             <textarea
               value={qaCriteria}
               onChange={(e) => setQaCriteria(e.target.value)}
               rows={2}
               placeholder={"tone: Agent maintained a professional tone"}
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
+              className="mt-1"
+              style={textareaStyle}
             />
           </div>
-          <button
-            type="submit"
-            disabled={busy || !id || !name}
-            className="self-start rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-            style={{ background: "var(--series-3)" }}
-          >
-            {busy ? "Saving…" : "Create rubric"}
-          </button>
+          <PrimaryButton type="submit" disabled={busy || !id || !name} className="self-start">
+            {busy ? "Saving…" : "Create Rubric"}
+          </PrimaryButton>
         </form>
       )}
 
-      <div className="flex flex-col gap-3">
-        {rubrics.map((r) => (
-          <div key={r.id} className="rounded-lg border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium" style={{ color: "var(--text-primary)" }}>
-                  {r.name}
-                </div>
-                <div className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  {r.id}
-                </div>
-              </div>
-              <button
-                onClick={() => handleDelete(r.id)}
-                disabled={busy}
-                className="rounded-md border px-3 py-1 text-xs font-medium disabled:opacity-50"
-                style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}
-              >
-                Delete
-              </button>
-            </div>
-            <div className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-              {r.script_steps.length} script steps · {r.compliance_rules.length} compliance rules ·{" "}
-              {r.qa_criteria.length} QA criteria
-            </div>
-            {(r.compliance_rules.length > 0 || r.qa_criteria.length > 0) && (
-              <div className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-                {criteriaToLines([...r.compliance_rules, ...r.qa_criteria])}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      {rubrics.length === 0 ? (
+        <EmptyState>No rubrics defined yet.</EmptyState>
+      ) : (
+        <table className="dense-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th className="numeric">Steps</th>
+              <th className="numeric">Compliance</th>
+              <th className="numeric">QA</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rubrics.map((r) => (
+              <tr key={r.id}>
+                <td>
+                  <span style={{ color: "var(--text-primary)" }}>{r.name}</span>
+                  <span
+                    className="ml-2"
+                    style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.6875rem", color: "var(--text-muted)" }}
+                  >
+                    {r.id}
+                  </span>
+                </td>
+                <td className="numeric">{r.script_steps.length}</td>
+                <td className="numeric">{r.compliance_rules.length}</td>
+                <td className="numeric">{r.qa_criteria.length}</td>
+                <td style={{ width: 80, textAlign: "right" }}>
+                  <TextAction destructive onClick={() => handleDelete(r.id)} disabled={busy}>
+                    Delete
+                  </TextAction>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

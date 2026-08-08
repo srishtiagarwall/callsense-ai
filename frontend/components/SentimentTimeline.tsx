@@ -7,18 +7,12 @@ interface SentimentTimelineProps {
   segments: SegmentSentiment[];
 }
 
-const WIDTH = 640;
-const HEIGHT = 180;
-const PAD_LEFT = 40;
-const PAD_RIGHT = 16;
+const WIDTH = 560;
+const HEIGHT = 160;
+const PAD_LEFT = 8;
+const PAD_RIGHT = 88;
 const PAD_TOP = 16;
-const PAD_BOTTOM = 24;
-
-const LABEL_COLOR: Record<string, string> = {
-  positive: "var(--status-good)",
-  neutral: "var(--status-warning)",
-  negative: "var(--status-critical)",
-};
+const PAD_BOTTOM = 16;
 
 export default function SentimentTimeline({ segments }: SentimentTimelineProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
@@ -26,10 +20,14 @@ export default function SentimentTimeline({ segments }: SentimentTimelineProps) 
   if (segments.length === 0) {
     return (
       <div
-        className="rounded-lg border p-4 text-sm"
-        style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-muted)" }}
+        style={{
+          fontFamily: "var(--font-jetbrains-mono)",
+          fontSize: "0.6875rem",
+          textTransform: "uppercase",
+          color: "var(--text-muted)",
+        }}
       >
-        Sentiment: no data yet
+        Sentiment — no data
       </div>
     );
   }
@@ -39,25 +37,19 @@ export default function SentimentTimeline({ segments }: SentimentTimelineProps) 
 
   const xFor = (i: number) =>
     PAD_LEFT + (segments.length === 1 ? plotW / 2 : (i / (segments.length - 1)) * plotW);
-  // score ranges -1..1, map to plot with 0 at vertical center
   const yFor = (score: number) => PAD_TOP + plotH / 2 - (score * plotH) / 2;
 
-  const linePath = segments.map((s, i) => `${i === 0 ? "M" : "L"} ${xFor(i)} ${yFor(s.score)}`).join(" ");
-
   const hovered = hoverIdx !== null ? segments[hoverIdx] : null;
+  const last = segments[segments.length - 1];
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}>
-      <div className="mb-2 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-        Sentiment over time
-      </div>
+    <div>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="w-full"
-        style={{ maxWidth: WIDTH }}
+        style={{ maxWidth: WIDTH, overflow: "visible" }}
         onMouseLeave={() => setHoverIdx(null)}
       >
-        {/* zero baseline */}
         <line
           x1={PAD_LEFT}
           x2={WIDTH - PAD_RIGHT}
@@ -65,22 +57,55 @@ export default function SentimentTimeline({ segments }: SentimentTimelineProps) 
           y2={PAD_TOP + plotH / 2}
           stroke="var(--baseline)"
           strokeWidth={1}
+          strokeDasharray="2 3"
         />
 
-        <path d={linePath} fill="none" stroke="var(--text-muted)" strokeWidth={1.5} strokeLinejoin="round" />
+        {segments.slice(0, -1).map((s, i) => {
+          const next = segments[i + 1];
+          const midScore = (s.score + next.score) / 2;
+          const color = midScore >= 0 ? "var(--status-good)" : "var(--status-critical)";
+          return (
+            <line
+              key={i}
+              x1={xFor(i)}
+              y1={yFor(s.score)}
+              x2={xFor(i + 1)}
+              y2={yFor(next.score)}
+              stroke={color}
+              strokeWidth={1.5}
+              strokeLinecap="round"
+            />
+          );
+        })}
+
+        <circle
+          cx={xFor(segments.length - 1)}
+          cy={yFor(last.score)}
+          r={3}
+          fill={last.score >= 0 ? "var(--status-good)" : "var(--status-critical)"}
+        />
+        <text
+          x={xFor(segments.length - 1) + 10}
+          y={yFor(last.score) + 4}
+          fontFamily="var(--font-jetbrains-mono)"
+          fontSize="12"
+          fontWeight={500}
+          fill={last.score >= 0 ? "var(--status-good)" : "var(--status-critical)"}
+        >
+          {last.score >= 0 ? "+" : ""}
+          {last.score.toFixed(2)}
+        </text>
 
         {segments.map((s, i) => (
-          <g key={i}>
-            <circle cx={xFor(i)} cy={yFor(s.score)} r={5} fill={LABEL_COLOR[s.label] ?? "var(--text-muted)"} stroke="var(--surface-1)" strokeWidth={2} />
-            <rect
-              x={xFor(i) - plotW / segments.length / 2}
-              y={PAD_TOP}
-              width={plotW / segments.length}
-              height={plotH}
-              fill="transparent"
-              onMouseEnter={() => setHoverIdx(i)}
-            />
-          </g>
+          <rect
+            key={i}
+            x={xFor(i) - plotW / segments.length / 2}
+            y={PAD_TOP}
+            width={plotW / segments.length}
+            height={plotH}
+            fill="transparent"
+            onMouseEnter={() => setHoverIdx(i)}
+          />
         ))}
 
         {hoverIdx !== null && (
@@ -96,13 +121,16 @@ export default function SentimentTimeline({ segments }: SentimentTimelineProps) 
       </svg>
 
       {hovered && (
-        <div className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-          <span className="capitalize" style={{ color: LABEL_COLOR[hovered.label], fontWeight: 600 }}>
+        <div
+          className="mt-1 capitalize"
+          style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.75rem", color: "var(--text-secondary)" }}
+        >
+          <span style={{ color: hovered.score >= 0 ? "var(--status-good)" : "var(--status-critical)" }}>
             {hovered.label}
           </span>
-          {" — "}
-          <span className="capitalize">{hovered.speaker}</span>
-          {` (score ${hovered.score.toFixed(2)})`}
+          {" · "}
+          {hovered.speaker}
+          {` · ${hovered.score.toFixed(2)}`}
         </div>
       )}
     </div>

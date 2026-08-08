@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { uploadCall } from "@/lib/api";
+import { PrimaryButton } from "@/components/Button";
+import TextInput from "@/components/TextInput";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -10,6 +12,7 @@ export default function UploadPage() {
   const [language, setLanguage] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,53 +30,81 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-4">
-      <h1 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
-        Upload a call
+    <div className="flex max-w-md flex-col gap-6">
+      <h1
+        style={{
+          fontFamily: "var(--font-fraunces)",
+          fontWeight: 600,
+          fontSize: "2.75rem",
+          lineHeight: 1.05,
+          letterSpacing: "-0.01em",
+          color: "var(--text-primary)",
+        }}
+      >
+        Upload
       </h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-            Audio file
-          </label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <label
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            const dropped = e.dataTransfer.files?.[0];
+            if (dropped) setFile(dropped);
+          }}
+          className="flex flex-col items-center justify-center py-12 text-center"
+          style={{
+            border: `1px dashed ${dragOver ? "var(--accent)" : "var(--border-strong)"}`,
+            cursor: "pointer",
+          }}
+        >
           <input
             type="file"
             accept="audio/*"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm"
-            style={{ color: "var(--text-secondary)" }}
+            className="hidden"
           />
-        </div>
+          <span
+            style={{
+              fontFamily: "var(--font-jetbrains-mono)",
+              fontSize: "0.75rem",
+              letterSpacing: "0.02em",
+              textTransform: "uppercase",
+              color: dragOver ? "var(--accent)" : "var(--text-muted)",
+            }}
+          >
+            {file ? file.name : "Drag file or click to browse"}
+          </span>
+        </label>
 
         <div>
-          <label className="mb-1 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+          <label
+            style={{
+              fontFamily: "var(--font-fraunces)",
+              fontWeight: 500,
+              fontSize: "0.75rem",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+            }}
+          >
             Language (optional)
           </label>
-          <input
-            type="text"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            placeholder="en"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-primary)" }}
-          />
+          <TextInput value={language} onChange={(e) => setLanguage(e.target.value)} placeholder="en" className="mt-1" />
         </div>
 
         {error && (
-          <div className="rounded-lg border p-3 text-sm" style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}>
-            {error}
-          </div>
+          <div style={{ fontFamily: "var(--font-fraunces)", color: "var(--status-critical)" }}>{error}</div>
         )}
 
-        <button
-          type="submit"
-          disabled={!file || busy}
-          className="rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          style={{ background: "var(--series-1)" }}
-        >
+        <PrimaryButton type="submit" disabled={!file || busy} className="self-start">
           {busy ? "Uploading…" : "Upload"}
-        </button>
+        </PrimaryButton>
       </form>
     </div>
   );

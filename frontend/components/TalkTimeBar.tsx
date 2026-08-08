@@ -1,78 +1,55 @@
 import type { TalkMetrics } from "@/lib/types";
-import { formatDuration as formatSeconds } from "@/lib/format";
 
 interface TalkTimeBarProps {
   metrics: TalkMetrics;
 }
 
-const WIDTH = 640;
-const BAR_HEIGHT = 28;
+const WIDTH = 300;
+const BAR_HEIGHT = 8;
 
 export default function TalkTimeBar({ metrics }: TalkTimeBarProps) {
   const total = metrics.agent_seconds + metrics.customer_seconds;
 
   if (total === 0) {
     return (
-      <div
-        className="rounded-lg border p-4 text-sm"
-        style={{ borderColor: "var(--border)", background: "var(--surface-1)", color: "var(--text-muted)" }}
-      >
-        Talk-time metrics: no segments yet
+      <div style={{ fontFamily: "var(--font-fraunces)", fontStyle: "italic", fontSize: "0.875rem", color: "var(--text-muted)" }}>
+        No segments yet.
       </div>
     );
   }
 
   const agentWidth = (metrics.agent_pct / 100) * WIDTH;
-  const customerWidth = (metrics.customer_pct / 100) * WIDTH;
+  const customerWidth = WIDTH - agentWidth;
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}>
-      <div className="mb-3 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-        Talk-time & interruptions
-      </div>
-
+    <div>
       <svg viewBox={`0 0 ${WIDTH} ${BAR_HEIGHT}`} className="w-full" style={{ maxWidth: WIDTH }}>
-        <rect x={0} y={0} width={agentWidth} height={BAR_HEIGHT} fill="var(--series-1)" rx={4} />
-        <rect
-          x={agentWidth}
-          y={0}
-          width={customerWidth}
-          height={BAR_HEIGHT}
-          fill="var(--series-2)"
-          rx={4}
-        />
+        <rect x={0} y={0} width={WIDTH} height={BAR_HEIGHT} fill="var(--surface-2)" />
+        <rect x={0} y={0} width={agentWidth} height={BAR_HEIGHT} fill="var(--series-1)" />
+        <rect x={agentWidth} y={0} width={customerWidth} height={BAR_HEIGHT} fill="var(--accent)" />
+        {agentWidth > 0 && agentWidth < WIDTH && (
+          <rect x={agentWidth - 0.5} y={0} width={1} height={BAR_HEIGHT} fill="var(--background)" />
+        )}
       </svg>
 
-      <div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+      <div className="mt-2 flex justify-between" style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.75rem" }}>
+        <span style={{ color: "var(--series-1)" }}>AGENT {metrics.agent_pct}%</span>
+        <span style={{ color: "var(--accent)" }}>CALLER {metrics.customer_pct}%</span>
+      </div>
+
+      <div
+        className="mt-3 grid grid-cols-2 gap-2"
+        style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.75rem", color: "var(--text-secondary)" }}
+      >
         <div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "var(--series-1)" }} />
-            <span style={{ color: "var(--text-secondary)" }}>Agent</span>
-          </div>
-          <div className="mt-0.5 font-medium tabular-nums" style={{ color: "var(--text-primary)" }}>
-            {metrics.agent_pct}% ({formatSeconds(metrics.agent_seconds)})
+          <div style={{ color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.6875rem" }}>Longest turn</div>
+          <div className="capitalize" style={{ color: "var(--text-primary)" }}>
+            {metrics.longest_monologue_speaker ?? "—"} · {metrics.longest_monologue_seconds}s
           </div>
         </div>
         <div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "var(--series-2)" }} />
-            <span style={{ color: "var(--text-secondary)" }}>Customer</span>
-          </div>
-          <div className="mt-0.5 font-medium tabular-nums" style={{ color: "var(--text-primary)" }}>
-            {metrics.customer_pct}% ({formatSeconds(metrics.customer_seconds)})
-          </div>
-        </div>
-        <div>
-          <div style={{ color: "var(--text-secondary)" }}>Longest monologue</div>
-          <div className="mt-0.5 font-medium tabular-nums capitalize" style={{ color: "var(--text-primary)" }}>
-            {metrics.longest_monologue_speaker ?? "—"} · {formatSeconds(metrics.longest_monologue_seconds)}
-          </div>
-        </div>
-        <div>
-          <div style={{ color: "var(--text-secondary)" }}>Interruptions</div>
-          <div className="mt-0.5 font-medium tabular-nums" style={{ color: "var(--text-primary)" }}>
-            {metrics.interruption_count}
-          </div>
+          <div style={{ color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.6875rem" }}>Interruptions</div>
+          <div style={{ color: "var(--text-primary)" }}>{metrics.interruption_count}</div>
         </div>
       </div>
     </div>

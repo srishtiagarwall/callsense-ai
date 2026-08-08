@@ -7,44 +7,76 @@ interface ScorecardViewProps {
 
 export default function ScorecardView({ evaluation }: ScorecardViewProps) {
   const entries = Object.entries(evaluation.scores);
+  const overall = entries.length > 0 ? entries.reduce((sum, [, s]) => sum + s, 0) / entries.length : 0;
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}>
-      <div className="mb-3 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-        QA Scorecard
+    <div>
+      <div className="flex items-baseline justify-between" style={{ borderBottom: "1px solid var(--border-strong)", paddingBottom: "0.5rem" }}>
+        <span
+          style={{ fontFamily: "var(--font-fraunces)", fontSize: "0.875rem", color: "var(--text-secondary)" }}
+        >
+          Overall
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-jetbrains-mono)",
+            fontWeight: 500,
+            fontSize: "1.25rem",
+            color: scoreColor(overall),
+          }}
+        >
+          {overall.toFixed(2)}
+        </span>
       </div>
 
-      <p className="mb-4 text-sm" style={{ color: "var(--text-secondary)" }}>
-        {evaluation.summary}
-      </p>
-
-      <div className="space-y-2">
+      <div className="mt-2">
         {entries.map(([id, score]) => (
-          <div key={id} className="flex items-center gap-3">
-            <span className="w-40 shrink-0 text-sm" style={{ color: "var(--text-primary)" }}>
-              {id}
+          <div
+            key={id}
+            className="flex items-center justify-between py-1.5"
+            style={{ borderBottom: "1px solid var(--border)" }}
+          >
+            <span style={{ fontFamily: "var(--font-fraunces)", fontSize: "0.875rem", color: "var(--text-primary)" }}>
+              {id.replace(/_/g, " ")}
             </span>
-            <div className="h-2 flex-1 rounded-full" style={{ background: "var(--gridline)" }}>
-              <div
-                className="h-2 rounded-full"
-                style={{ width: `${Math.round(score * 100)}%`, background: scoreColor(score) }}
-              />
-            </div>
-            <span className="w-10 shrink-0 text-right text-sm tabular-nums" style={{ color: "var(--text-secondary)" }}>
+            <span
+              style={{ fontFamily: "var(--font-jetbrains-mono)", fontSize: "0.8125rem", color: scoreColor(score) }}
+            >
               {score.toFixed(2)}
             </span>
           </div>
         ))}
       </div>
 
+      <p
+        className="mt-3"
+        style={{ fontFamily: "var(--font-fraunces)", fontStyle: "italic", fontSize: "0.875rem", lineHeight: 1.5, color: "var(--text-secondary)" }}
+      >
+        {evaluation.summary}
+      </p>
+
       {evaluation.violations.length > 0 && (
-        <div className="mt-4">
-          <div className="mb-1 text-xs font-medium" style={{ color: "var(--status-critical)" }}>
-            Compliance violations
+        <div className="mt-3">
+          <div
+            style={{
+              fontFamily: "var(--font-fraunces)",
+              fontWeight: 500,
+              fontSize: "0.75rem",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "var(--status-critical)",
+            }}
+          >
+            Violations
           </div>
-          <ul className="list-inside list-disc text-sm" style={{ color: "var(--text-primary)" }}>
+          <ul className="mt-1">
             {evaluation.violations.map((v) => (
-              <li key={v}>{v}</li>
+              <li
+                key={v}
+                style={{ fontFamily: "var(--font-fraunces)", fontSize: "0.8125rem", color: "var(--text-primary)" }}
+              >
+                — {v}
+              </li>
             ))}
           </ul>
         </div>
