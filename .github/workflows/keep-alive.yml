@@ -1,0 +1,23 @@
+name: Keep Render services awake
+
+on:
+  schedule:
+    # Every 10 minutes — Render's free tier sleeps after ~15 min idle.
+    # GitHub's scheduler doesn't guarantee exact timing on free runners,
+    # so this is a best-effort floor, not a precise interval.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        if: vars.BACKEND_URL != ''
+        run: |
+          curl -sf --max-time 30 "${{ vars.BACKEND_URL }}/health" && echo "backend: awake" || echo "backend: ping failed (may be waking up)"
+
+      - name: Ping frontend
+        if: vars.FRONTEND_URL != ''
+        run: |
+          curl -sf --max-time 30 -o /dev/null "${{ vars.FRONTEND_URL }}" && echo "frontend: awake" || echo "frontend: ping failed (may be waking up)"

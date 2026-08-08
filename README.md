@@ -140,25 +140,44 @@ container restarts). Backend on `:8000`, frontend on `:3000`. Provider API keys 
 
 ## Deploying
 
-**Frontend → Vercel.** Trivial — connect the repo, set `NEXT_PUBLIC_API_BASE_URL` to your deployed
-backend URL as an environment variable. The frontend is fully stateless.
+Both backend and frontend deploy to **Render** (two separate services in one account — a Blueprint
+for the backend, a plain web service for the frontend). Vercel works equally well for the frontend
+if you'd rather split platforms; the frontend is fully stateless either way.
 
-**Backend → Render** (or any host with a persistent disk — Fly.io with a volume works the same way).
-The backend is **not** deployable to Vercel/serverless functions or a free-tier PaaS without a
-persistent disk: `JsonStore` writes flat JSON files and uploaded audio to local disk, and that state
-needs to survive redeploys/restarts.
+### Backend
 
-- `backend/render.yaml` declares a 1GB persistent disk mounted at `/var/data/callsense`, with
-  `DATA_DIR`/`STORAGE_DIR` env vars pointing the app at it (both are read automatically by
-  `pydantic-settings` — no code changes needed to relocate them).
-- Render's free tier does **not** include a persistent disk (~$1-7/mo for a small one on a paid plan).
-- Set `FRONTEND_ORIGINS` to your Vercel URL after the first deploy (CORS), and `API_KEY` if you want
-  the shareable-link auth gate enabled (see below) — both are placeholders in `render.yaml`.
+- `backend/render.yaml` is the **free-tier** blueprint — no persistent disk, so uploaded calls/data
+  reset on every restart or redeploy. Use this first to confirm the deploy works end to end before
+  paying for anything.
+- `backend/render.paid.yaml` is the upgrade path: adds a 1GB persistent disk at `/var/data/callsense`
+  with `DATA_DIR`/`STORAGE_DIR` env vars pointing the app at it (both are read automatically by
+  `pydantic-settings` — no code changes needed). Render's persistent disk is a paid add-on
+  (~$1-7/mo for a small one); the free plan has none.
+- In Render: **New → Blueprint**, connect this repo, it auto-detects `render.yaml`. Fill in
+  `GEMINI_API_KEY` (required) and optionally `SMALLEST_API_KEY`/`SARVAM_API_KEY` for live
+  transcription. Leave `FRONTEND_ORIGINS` blank until the frontend is deployed (step below).
 
-**Shareable demo link.** If `API_KEY` is set, the whole API requires it (`X-API-Key` header, or a
-`key` query param for the SSE endpoint). Send an interviewer `https://your-frontend.vercel.app?key=<API_KEY>`
-— the frontend saves it to `localStorage` on first visit and attaches it to every request after that.
-Leave `API_KEY` unset for a fully open demo.
+### Frontend
+
+- **New → Web Service** (not a Blueprint), same repo, **Root Directory** = `frontend`, runtime
+  **Docker** (picks up `frontend/Dockerfile`).
+- One env var: `NEXT_PUBLIC_API_BASE_URL` = the backend URL from the step above.
+
+### Closing the loop
+
+Set the backend's `FRONTEND_ORIGINS` to the frontend URL once it exists (CORS) and redeploy.
+
+**Shareable demo link.** If `API_KEY` is set on the backend, the whole API requires it
+(`X-API-Key` header, or a `key` query param for the SSE endpoint). Share
+`https://your-frontend-url?key=<API_KEY>` — the frontend saves it to `localStorage` on first visit
+and attaches it to every request after that. Leave `API_KEY` unset for a fully open demo.
+
+### Keeping the free tier awake
+
+Render's free plan spins down after ~15 minutes idle and takes 30-60s to wake on the next request.
+`.github/workflows/keep-alive.yml` pings both services every 10 minutes to prevent that — set the
+repo variables `BACKEND_URL` and `FRONTEND_URL` (Settings → Secrets and variables → Actions →
+Variables) to your deployed URLs once you have them; the workflow no-ops until both are set.
 
 ## Seeding demo data
 

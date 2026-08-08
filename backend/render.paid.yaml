@@ -1,0 +1,33 @@
+# Upgrade path from render.yaml once you're ready to pay for a persistent
+# disk (data currently resets on every restart/redeploy on the free plan).
+# To use: in the Render dashboard, either edit the existing service's plan
+# to "starter" and manually add a disk at /var/data/callsense, or delete
+# and re-deploy this blueprint instead of render.yaml.
+services:
+  - type: web
+    name: callsense-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    envVars:
+      - key: DATA_DIR
+        value: /var/data/callsense/data
+      - key: STORAGE_DIR
+        value: /var/data/callsense/storage
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SMALLEST_API_KEY
+        sync: false
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: API_KEY
+        sync: false
+    disk:
+      name: callsense-data
+      mountPath: /var/data/callsense
+      sizeGB: 1
