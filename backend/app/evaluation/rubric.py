@@ -37,8 +37,4 @@ DEFAULT_SALES_RUBRIC = Rubric(
     ],
 )
 
-RUBRICS: dict[str, Rubric] = {DEFAULT_SALES_RUBRIC.id: DEFAULT_SALES_RUBRIC}
-
-
-def get_rubric(rubric_id: str) -> Rubric | None:
-    return RUBRICS.get(rubric_id)
+DEFAULT_RUBRIC_ID = DEFAULT_SALES_RUBRIC.id

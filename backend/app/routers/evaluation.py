@@ -1,20 +1,20 @@
 from fastapi import APIRouter, HTTPException
 
 from app.evaluation.gemini_evaluator import EvaluatorError, EvaluatorNotConfigured, evaluate_call
-from app.evaluation.rubric import DEFAULT_SALES_RUBRIC, get_rubric
+from app.evaluation.rubric import DEFAULT_RUBRIC_ID
 from app.models.schemas import EvaluationResult
-from app.storage.stores import evaluations_store, transcripts_store
+from app.storage.stores import evaluations_store, rubrics_store, transcripts_store
 
 router = APIRouter(prefix="/calls", tags=["evaluation"])
 
 
 @router.post("/{call_id}/evaluate", response_model=EvaluationResult)
-async def evaluate(call_id: str, rubric_id: str = DEFAULT_SALES_RUBRIC.id) -> EvaluationResult:
+async def evaluate(call_id: str, rubric_id: str = DEFAULT_RUBRIC_ID) -> EvaluationResult:
     transcript = transcripts_store.get(call_id)
     if transcript is None:
         raise HTTPException(status_code=404, detail="Transcript not found — run transcription first")
 
-    rubric = get_rubric(rubric_id)
+    rubric = rubrics_store.get(rubric_id)
     if rubric is None:
         raise HTTPException(status_code=404, detail=f"Rubric '{rubric_id}' not found")
 
