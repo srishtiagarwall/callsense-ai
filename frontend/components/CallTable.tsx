@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Call } from "@/lib/types";
+import { formatDuration } from "@/lib/format";
 
 interface CallTableProps {
   calls: Call[];
@@ -29,6 +30,9 @@ export default function CallTable({ calls }: CallTableProps) {
               Language
             </th>
             <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--text-secondary)" }}>
+              Duration
+            </th>
+            <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--text-secondary)" }}>
               Uploaded
             </th>
           </tr>
@@ -43,6 +47,9 @@ export default function CallTable({ calls }: CallTableProps) {
               </td>
               <td className="px-4 py-2" style={{ color: "var(--text-secondary)" }}>
                 {call.language ?? "—"}
+              </td>
+              <td className="px-4 py-2 tabular-nums" style={{ color: "var(--text-secondary)" }}>
+                {call.duration_seconds != null ? formatDuration(call.duration_seconds) : "—"}
               </td>
               <td className="px-4 py-2 tabular-nums" style={{ color: "var(--text-secondary)" }}>
                 {new Date(call.uploaded_at).toLocaleString()}
