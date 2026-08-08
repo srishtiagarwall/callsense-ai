@@ -7,6 +7,8 @@ const LINKS = [
   { href: "/", label: "Dashboard" },
   { href: "/calls", label: "Calls" },
   { href: "/upload", label: "Upload" },
+  { href: "/rubrics", label: "Rubrics" },
+  { href: "/search", label: "Search" },
 ];
 
 export default function NavBar() {

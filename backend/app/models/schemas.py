@@ -62,3 +62,35 @@ class EvaluationResult(BaseModel):
     summary: str
     raw: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=_now)
+
+
+class SegmentSentiment(BaseModel):
+    segment_index: int
+    speaker: str
+    label: str  # "positive" | "neutral" | "negative"
+    score: float  # -1 (very negative) to 1 (very positive)
+
+
+class SentimentResult(BaseModel):
+    id: str | None = None  # set to call_id when persisted — one sentiment analysis per call
+    call_id: str
+    segments: list[SegmentSentiment] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=_now)
+
+
+class TrackerMatch(BaseModel):
+    id: str | None = None
+    call_id: str
+    tracker_id: str
+    keyword: str
+    segment_index: int
+    snippet: str
+    created_at: datetime = Field(default_factory=_now)
+
+
+class CallEmbedding(BaseModel):
+    id: str | None = None  # set to call_id when persisted — one embedding per call
+    call_id: str
+    embedding: list[float]
+    model: str
+    created_at: datetime = Field(default_factory=_now)
