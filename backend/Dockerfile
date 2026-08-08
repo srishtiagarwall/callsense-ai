@@ -21,4 +21,8 @@ COPY app ./app
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Render injects PORT (defaults to 10000, not 8000) and requires the
+# container to actually bind to it — hardcoding 8000 here would mean Render
+# never finds an open port and the deploy fails. Local/Docker Compose usage
+# is unaffected since PORT is unset there and defaults to 8000.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
