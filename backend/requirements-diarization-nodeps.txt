@@ -1,0 +1,9 @@
+# Must be installed with `pip install --no-deps -r requirements-diarization-nodeps.txt`
+# BEFORE `pip install -r requirements.txt`.
+#
+# resemblyzer's own dependency list pins plain `webrtcvad`, which fails to
+# build on Windows without MSVC Build Tools. requirements.txt installs
+# webrtcvad-wheels instead (a prebuilt-wheel drop-in for the same package),
+# so resemblyzer must be installed with --no-deps to avoid pip trying to
+# also satisfy its declared (and broken-on-Windows) webrtcvad dependency.
+resemblyzer==0.1.4

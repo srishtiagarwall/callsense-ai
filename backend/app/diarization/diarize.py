@@ -4,9 +4,9 @@ from app.models.schemas import TranscriptSegment
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
-# Alternates speakers per sentence as a placeholder heuristic — replace with
-# real diarization (e.g. pyannote, or a provider's native speaker labels)
-# once a provider that returns them is wired in.
+# Last-resort fallback when audio-based diarization (app.diarization.audio_diarize)
+# fails or isn't possible (e.g. mono-speaker audio, unreadable file, <2 detected
+# turns). Alternates speakers per sentence with no real speaker information.
 
 
 def diarize_transcript(text: str, avg_seconds_per_word: float = 0.4) -> list[TranscriptSegment]:
