@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: callsense-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    envVars:
+      - key: DATA_DIR
+        value: /var/data/callsense/data
+      - key: STORAGE_DIR
+        value: /var/data/callsense/storage
+      - key: FRONTEND_ORIGINS
+        sync: false # set to your deployed Vercel URL after first deploy
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SMALLEST_API_KEY
+        sync: false
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: API_KEY
+        sync: false
+    disk:
+      name: callsense-data
+      mountPath: /var/data/callsense
+      sizeGB: 1
