@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     # CORS (comma-separated list of allowed origins)
     frontend_origins: str = "http://localhost:3000,http://localhost:3002"
 
+    # Optional shared-secret gate for a public demo deploy. Unset = auth disabled
+    # entirely (important for local dev — no key means no friction).
+    api_key: str | None = None
+
     # Paths
     base_dir: Path = Path(__file__).resolve().parent.parent
     data_dir: Path = base_dir / "data"
