@@ -7,8 +7,8 @@ services:
   - type: web
     name: callsense-backend
     runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     plan: starter
     envVars:
       - key: DATA_DIR
