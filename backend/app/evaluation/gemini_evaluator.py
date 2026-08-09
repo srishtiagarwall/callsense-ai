@@ -29,6 +29,7 @@ class _EvaluationSchema(BaseModel):
     qa: list[_CriterionScore]
     violations: list[str]
     summary: str
+    agent_present: bool
 
 
 def _criterion_list_schema() -> dict:
@@ -57,8 +58,9 @@ _RESPONSE_SCHEMA = {
         "qa": _criterion_list_schema(),
         "violations": {"type": "ARRAY", "items": {"type": "STRING"}},
         "summary": {"type": "STRING"},
+        "agent_present": {"type": "BOOLEAN"},
     },
-    "required": ["script_adherence", "compliance", "qa", "violations", "summary"],
+    "required": ["script_adherence", "compliance", "qa", "violations", "summary", "agent_present"],
 }
 
 
@@ -80,7 +82,9 @@ TRANSCRIPT:
 {transcript_text}
 
 Return a score (0-1) and short note for every script step, compliance rule, and QA criterion listed above,
-a list of violated compliance rule ids (empty if none), and a one-paragraph summary of call quality."""
+a list of violated compliance rule ids (empty if none), a one-paragraph summary of call quality, and
+agent_present: true only if an agent/representative is actually speaking in the transcript (false if the
+transcript contains only one party, e.g. a customer leaving feedback with no agent responses)."""
 
 
 async def evaluate_call(call_id: str, transcript_text: str, rubric: Rubric) -> EvaluationResult:
@@ -112,5 +116,6 @@ async def evaluate_call(call_id: str, transcript_text: str, rubric: Rubric) -> E
         scores=scores,
         violations=parsed.violations,
         summary=parsed.summary,
+        agent_present=parsed.agent_present,
         raw=json.loads(parsed.model_dump_json()),
     )

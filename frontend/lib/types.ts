@@ -57,6 +57,7 @@ export interface EvaluationResult {
   scores: Record<string, number>;
   violations: string[];
   summary: string;
+  agent_present: boolean;
   raw: Record<string, unknown>;
   created_at: string;
 }

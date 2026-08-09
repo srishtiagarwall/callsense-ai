@@ -42,6 +42,7 @@ async def test_evaluate_call_flattens_scores_from_gemini_response(monkeypatch):
         "qa": [{"id": "tone", "score": 0.9, "note": "polite"}],
         "violations": [],
         "summary": "Solid call overall.",
+        "agent_present": True,
     }
     fake_client = _FakeClient(json.dumps(fake_payload))
     monkeypatch.setattr(gemini_evaluator.settings, "gemini_api_key", "fake-key")
@@ -54,6 +55,7 @@ async def test_evaluate_call_flattens_scores_from_gemini_response(monkeypatch):
     assert result.scores == {"step_1": 0.8, "disclosure": 1.0, "tone": 0.9}
     assert result.violations == []
     assert result.summary == "Solid call overall."
+    assert result.agent_present is True
 
 
 @pytest.mark.asyncio

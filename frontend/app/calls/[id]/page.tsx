@@ -39,6 +39,7 @@ import TrackerBadges from "@/components/TrackerBadges";
 import SectionHeading from "@/components/SectionHeading";
 import { TextAction } from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
+import PipelineSteps from "@/components/PipelineSteps";
 
 export default function CallDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -250,10 +251,18 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
           {transcript ? (
             <TranscriptView transcript={transcript} sentimentBySegment={sentimentBySegment} />
           ) : (
-            <EmptyState>This call hasn&rsquo;t been transcribed yet.</EmptyState>
+            <EmptyState
+              action={
+                <TextAction onClick={handleTranscribe} disabled={busy || jobInFlight}>
+                  {jobInFlight ? "Transcribing…" : "Transcribe now"}
+                </TextAction>
+              }
+            >
+              This call hasn&rsquo;t been transcribed yet.
+            </EmptyState>
           )}
 
-          {job && job.attempts.length > 0 && (
+          {job && job.status === "failed" && job.attempts.length > 0 && (
             <div className="mt-6" style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
               <div
                 style={{
@@ -282,7 +291,51 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
 
         <div className="flex flex-col gap-8">
           <div>
-            <SectionHeading index={1} title="Scorecard" />
+            <SectionHeading index={1} title="Actions" />
+            <PipelineSteps
+              busy={busy}
+              steps={[
+                {
+                  label: "Transcribe",
+                  doneLabel: "Re-transcribe",
+                  done: !!transcript,
+                  disabled: jobInFlight,
+                  onRun: handleTranscribe,
+                },
+                {
+                  label: "Evaluate",
+                  doneLabel: "Re-evaluate",
+                  done: !!evaluation,
+                  disabled: !transcript,
+                  onRun: handleEvaluate,
+                },
+                {
+                  label: "Analyze sentiment",
+                  doneLabel: "Re-analyze",
+                  done: !!sentiment,
+                  disabled: !transcript,
+                  onRun: handleAnalyzeSentiment,
+                },
+                {
+                  label: "Run trackers",
+                  doneLabel: "Re-run",
+                  done: !!trackerMatches,
+                  disabled: !transcript,
+                  onRun: handleRunTrackers,
+                },
+                {
+                  label: "Index for search",
+                  doneLabel: "Re-index",
+                  done: indexed,
+                  disabled: !transcript,
+                  onRun: handleIndexForSearch,
+                },
+              ]}
+            />
+          </div>
+
+          <div>
+            <SectionHeading index={2} title="Scorecard" />
             {rubrics.length > 0 && (
               <select
                 value={selectedRubricId}
@@ -308,62 +361,64 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
             {evaluation ? (
               <ScorecardView evaluation={evaluation} />
             ) : (
-              <EmptyState>Not yet evaluated.</EmptyState>
+              <EmptyState
+                action={
+                  <TextAction onClick={handleEvaluate} disabled={busy || !transcript}>
+                    Evaluate now
+                  </TextAction>
+                }
+              >
+                {transcript ? "Not yet evaluated." : "Transcribe the call first."}
+              </EmptyState>
             )}
           </div>
 
           <div>
-            <SectionHeading index={2} title="Talk time" />
-            {talkMetrics ? <TalkTimeBar metrics={talkMetrics} /> : <EmptyState>No segments yet.</EmptyState>}
+            <SectionHeading index={3} title="Talk time" />
+            {evaluation && !evaluation.agent_present ? (
+              <EmptyState>
+                The evaluation found no agent in this transcript, so speaker-based talk time can&rsquo;t
+                be trusted and isn&rsquo;t shown.
+              </EmptyState>
+            ) : talkMetrics ? (
+              <TalkTimeBar metrics={talkMetrics} />
+            ) : (
+              <EmptyState>No segments yet.</EmptyState>
+            )}
           </div>
 
           <div>
-            <SectionHeading index={3} title="Sentiment" />
+            <SectionHeading index={4} title="Sentiment" />
             {sentiment ? (
               <SentimentTimeline segments={sentiment.segments} />
             ) : (
-              <EmptyState>Not yet analyzed.</EmptyState>
+              <EmptyState
+                action={
+                  <TextAction onClick={handleAnalyzeSentiment} disabled={busy || !transcript}>
+                    Analyze now
+                  </TextAction>
+                }
+              >
+                {transcript ? "Not yet analyzed." : "Transcribe the call first."}
+              </EmptyState>
             )}
           </div>
 
           <div>
-            <SectionHeading index={4} title="Trackers" />
+            <SectionHeading index={5} title="Trackers" />
             {trackerMatches ? (
               <TrackerBadges matches={trackerMatches} trackers={trackers} />
             ) : (
-              <EmptyState>Not yet run.</EmptyState>
+              <EmptyState
+                action={
+                  <TextAction onClick={handleRunTrackers} disabled={busy || !transcript}>
+                    Run now
+                  </TextAction>
+                }
+              >
+                {transcript ? "Not yet run." : "Transcribe the call first."}
+              </EmptyState>
             )}
-          </div>
-
-          <div>
-            <SectionHeading index={5} title="Actions" />
-            <div className="flex flex-col">
-              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                <TextAction onClick={handleTranscribe} disabled={busy || jobInFlight}>
-                  {transcript ? "Re-transcribe" : "Transcribe"}
-                </TextAction>
-              </div>
-              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                <TextAction onClick={handleEvaluate} disabled={busy || !transcript}>
-                  {evaluation ? "Re-evaluate" : "Evaluate"}
-                </TextAction>
-              </div>
-              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                <TextAction onClick={handleAnalyzeSentiment} disabled={busy || !transcript}>
-                  {sentiment ? "Re-analyze sentiment" : "Analyze sentiment"}
-                </TextAction>
-              </div>
-              <div className="py-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                <TextAction onClick={handleRunTrackers} disabled={busy || !transcript}>
-                  {trackerMatches ? "Re-run trackers" : "Run trackers"}
-                </TextAction>
-              </div>
-              <div className="py-2">
-                <TextAction onClick={handleIndexForSearch} disabled={busy || !transcript}>
-                  {indexed ? "Re-index for search" : "Index for search"}
-                </TextAction>
-              </div>
-            </div>
           </div>
         </div>
       </div>

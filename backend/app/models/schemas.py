@@ -60,6 +60,7 @@ class EvaluationResult(BaseModel):
     scores: dict[str, float]
     violations: list[str] = Field(default_factory=list)
     summary: str
+    agent_present: bool = True
     raw: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=_now)
 

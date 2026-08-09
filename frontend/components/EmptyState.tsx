@@ -1,4 +1,11 @@
-export default function EmptyState({ children }: { children: string }) {
+import type { ReactNode } from "react";
+
+interface EmptyStateProps {
+  children: string;
+  action?: ReactNode;
+}
+
+export default function EmptyState({ children, action }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center py-16 text-center">
       <div style={{ width: 24, borderBottom: "1px solid var(--border)", marginBottom: "1.25rem" }} />
@@ -14,6 +21,7 @@ export default function EmptyState({ children }: { children: string }) {
       >
         {children}
       </p>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
