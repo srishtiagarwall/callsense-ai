@@ -20,7 +20,7 @@ services:
         sync: false
 
   - type: web
-    name: callsense-frontend
+    name: callsense-ai
     runtime: docker
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
