@@ -25,6 +25,6 @@ services:
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
     plan: free
-    dockerBuildArgs:
-      NEXT_PUBLIC_API_BASE_URL:
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
         sync: false # set to your deployed backend URL, e.g. https://callsense-backend.onrender.com
