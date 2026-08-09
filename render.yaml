@@ -7,7 +7,7 @@ services:
     plan: free
     envVars:
       - key: FRONTEND_ORIGINS
-        sync: false # set to your deployed frontend URL after first deploy
+        sync: false # set to your deployed frontend URL
       - key: GEMINI_API_KEY
         sync: false
       - key: SMALLEST_API_KEY
@@ -18,3 +18,13 @@ services:
         sync: false
       - key: API_KEY
         sync: false
+
+  - type: web
+    name: callsense-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+    dockerBuildArgs:
+      NEXT_PUBLIC_API_BASE_URL:
+        sync: false # set to your deployed backend URL, e.g. https://callsense-backend.onrender.com
